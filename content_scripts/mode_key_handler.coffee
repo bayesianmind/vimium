@@ -28,23 +28,11 @@ class KeyHandlerMode extends Mode
     super extend options,
       keydown: @onKeydown.bind this
 
-    if options.exitOnEscape
-      # If we're part way through a command's key sequence, then a first Escape should reset the key state,
-      # and only a second Escape should actually exit this mode.
-      @push
-        _name: "key-handler-escape-listener"
-        keydown: (event) =>
-          if KeyboardUtils.isEscape(event) and not @isInResetState()
-            @reset()
-            @suppressEvent
-          else
-            @continueBubbling
-
   onKeydown: (event) ->
     keyChar = KeyboardUtils.getKeyCharString event
     isEscape = KeyboardUtils.isEscape event
     if isEscape and (@countPrefix != 0 or @keyState.length != 1)
-      DomUtils.consumeKeyup event, => @reset()
+      @continueBubbling
     # If the help dialog loses the focus, then Escape should hide it; see point 2 in #2045.
     else if isEscape and HelpDialog?.isShowing()
       HelpDialog.toggle()
